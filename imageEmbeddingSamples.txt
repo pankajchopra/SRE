@@ -1,0 +1,92 @@
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'my-app',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css']
+})
+export class AppComponent {
+
+  constructor() {
+  }
+
+  get imageBytes() {
+    const image = new Image();
+    image.src = 'https://www.w3schools.com/html/img_snowman.jpg';
+    image.onload = () => {
+      const byteArray = new Uint8Array(image.height * image.width * 4);
+      image.src = '';
+      image.decodeToDataURL(byteArray);
+    };
+    return byteArray;
+  }
+
+}
+<html>
+<head>
+  <title>Angular Image Demo</title>
+</head>
+<body>
+  <h1>Angular Image Demo</h1>
+  <img src="data:image/png;base64,{{ imageBytes | base64 }}" alt="Snowman">
+</body>
+</html>
+
+
+
+
+------
+
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'my-app',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css']
+})
+export class AppComponent {
+
+  constructor() {
+  }
+
+  get imageBytes() {
+    const image = new Image();
+    image.src = 'https://www.w3schools.com/html/img_snowman.jpg';
+    image.onload = () => {
+      const byteArray = new Uint8Array(image.height * image.width * 4);
+      image.src = '';
+      image.decodeToDataURL(byteArray);
+    };
+    return byteArray;
+  }
+
+  get html() {
+    const html = `
+      <html>
+        <head>
+          <title>Angular Image Demo</title>
+        </head>
+        <body>
+          <h1>Angular Image Demo</h1>
+          <img src="data:image/png;base64,{{ imageBytes | base64 }}" alt="Snowman">
+        </body>
+      </html>
+    `;
+    return html;
+  }
+
+  sendEmail() {
+    const mail = MailComposer.create({
+      body: this.html,
+      attachments: [
+        {
+          filename: 'snowman.png',
+          content: this.imageBytes
+        }
+      ]
+    });
+
+    mail.send();
+  }
+
+}
