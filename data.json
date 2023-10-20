@@ -1,0 +1,54 @@
+{"intents": [
+       {"tag": "account360",
+         "patterns": ["Can you show me account details for ", "Can you open Account details", "Can you show me household of","Please show me household"],
+         "responses": ["I am opening Account 360"],
+         "context": [""]
+        },
+       {"tag": "stockChart",
+         "patterns": ["Stock chart for ", "how is stock doing chart", "quote for stock"],
+         "responses": ["Lets see in the Stock chart"],
+         "context": [""]
+        },
+       {"tag": "stockNews",
+         "patterns": ["Stock news for ", "how is stock doing", "latest news for stock"],
+         "responses": ["Lets see in the Stock News"],
+         "context": [""]
+        },
+        {"tag": "greeting",
+         "patterns": ["Hi there", "How are you", "Is anyone there?","Hey","Hola", "Hello", "Good day"],
+         "responses": ["Hello, thanks for asking", "Good to see you again", "Hi there, how can I help?"],
+         "context": [""]
+        },
+        {"tag": "goodbye",
+         "patterns": ["Bye", "See you later", "Goodbye", "Nice chatting to you, bye", "Till next time"],
+         "responses": ["See you!", "Have a nice day", "Bye! Come back again soon."],
+         "context": [""]
+        },
+        {"tag": "thanks",
+         "patterns": ["Thanks", "Thank you", "That's helpful", "Awesome, thanks", "Thanks for helping me"],
+         "responses": ["Happy to help!", "Any time!", "My pleasure"],
+         "context": [""]
+        },
+        {"tag": "noanswer",
+         "patterns": [],
+         "responses": ["Sorry, can't understand you", "Please give me more info", "Not sure I understand"],
+         "context": [""]
+        },
+        {"tag": "options",
+         "patterns": ["How you could help me?", "What you can do?", "What help you provide?", "How you can be helpful?", "What support is offered"],
+         "responses": ["I can guide you through Adverse drug reaction list, Blood pressure tracking, Hospitals and Pharmacies", "Offering support for Adverse drug reaction, Blood pressure, Hospitals and Pharmacies"],
+         "context": [""]
+        },
+          {"tag": "create_text_message",
+         "patterns": ["Please create a text message?", "Create a note for me?", "I want you a write a message in a file."],
+         "responses": [""],
+         "context": [""]
+        },
+          {"tag": "exit",
+         "patterns": ["Bye", "Stop", "Quit", "Goodbye","shutdown", "Shut up"],
+         "responses": ["Bye, Have a good Day."],
+         "context": [""]
+        }
+
+]
+}
