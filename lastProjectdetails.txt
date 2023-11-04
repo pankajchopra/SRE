@@ -1,0 +1,16 @@
+Designed, architected, and implemented a new OpenFin-based platform to replace SmartStation used by advisors:
+
+Added new capabilities to the platform, ensuring resilience and scalability
+Enabled onboarding, deployment, and un-deployment of applications
+Developed entitlement options capability that integrates with multiple entitlement systems to provide access to applications in the Advisor Gateway platform
+Implemented customer search, caching client authorizations, and announcements generation and management for custom users with limited time and tracking user actions
+Created an online platform to support the team in diagnosing issues
+Technical Stack: Java, Spring Boot, MongoDB, Angular, JavaScript, and TypeScript
+
+Winner of hackathons for two consecutive years.
+Developed a voice-enabled AI chatbot that includes Vosk offline speech recognition:
+Used the Sequential Model in Keras to train the intent-based AI chatbot
+Created a custom NER model using the spaCy library, starting with a small English model
+Used the open-source RASA library for dialogue management
+The chatbot can open other applications by calling external APIs
+Integration with M365 is underway
