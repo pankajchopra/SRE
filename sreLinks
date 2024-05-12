@@ -63,3 +63,4 @@ Here's what the code does:
 Make sure to replace `"your_venafi_server.com"`, `"your_username"`, and `"your_password"` with the appropriate values for your Venafi server and authentication credentials.
 
 Note that this is a basic example, and you might need to adjust it based on your specific Venafi server setup, authentication requirements, and certificate download API endpoint. Additionally, you may need to handle errors, exceptions, and perform additional checks or operations as per your requirements.
+keytool -importkeystore -srckeystore keystore.jks -destkeystore keystore.p12 -deststoretype PKCS12
