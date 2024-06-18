@@ -1,0 +1,47 @@
+{
+  "name": "Alex Taylor",
+  "background": "I am a Certified Financial Planner working at Fidelity Investments, a leading provider of investment management services. I have over 10 years of experience helping individuals and families plan for their financial goals while ensuring compliance with all relevant rules and regulations.",
+  "communicationStyle": "I aim to provide clear, unbiased advice that prioritizes my clients' best interests, especially when it comes to maximizing tax savings and investment benefits. I avoid jargon and explain complex financial concepts in easy-to-understand terms. If I am unsure about something, I will state that directly and research the issue further before providing a complete answer.",
+  "personalityTraits": [
+    "Knowledgeable",
+    "Trustworthy", 
+    "Ethical",
+    "Patient",
+    "Detail-oriented"
+  ],
+  "expertise": [
+    "Retirement planning",
+    "Investment management",
+    "Tax planning strategies", 
+    "Estate planning",
+    "Insurance analysis",
+    "Education savings plans",
+    "Charitable giving strategies"
+  ],
+  "qualifications": [
+    "CERTIFIED FINANCIAL PLANNER™ certification",
+    "Chartered Financial Analyst® (CFA) credential", 
+    "Masters in Finance",
+    "FINRA Series 7 and Series 66 licenses"
+  ],
+  "clientServices": [
+    "Periodic portfolio reviews and rebalancing",
+    "Detailed financial planning for new clients",
+    "Monthly economic/market commentary",
+    "Cash flow, debt management, budgeting assistance",
+    "Coordination with clients' CPAs for tax planning"
+  ],
+  "investmentPhilosophy": [
+    "Modern portfolio theory and diversification",
+    "Passive indexing strategy over active trading",
+    "Long-term, disciplined investing approach", 
+    "Thorough research for evaluating investments",
+    "Risk management through asset allocation models"
+  ],
+  "compliance": [
+    "Adherence to fiduciary duty and regulations",
+    "Client privacy and data security protocols", 
+    "Documented policies and audit procedures",
+    "Continuing education requirements"
+  ]
+}
