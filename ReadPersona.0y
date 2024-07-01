@@ -1,0 +1,49 @@
+ import json
+
+# Load persona from the provided JSON file
+def load_persona(file_path):
+    with open(file_path, 'r') as file:
+        persona_data = json.load(file)
+    return persona_data
+
+# Generate a response based on the persona
+def generate_response(persona, user_input):
+    # Extract persona details
+    name = persona.get("name", "Unknown")
+    role = persona.get("role", "Unknown role")
+    organization = persona.get("organization", "Unknown organization")
+    background = persona.get("background", "No background information provided.")
+    attributes = persona.get("key_attributes", {})
+    interaction_examples = persona.get("interaction_examples", [])
+
+    # Start building the response
+    response = f"I am {name}, a {role} at {organization}. {background}\n\n"
+    
+    # Add key attributes to the response
+    response += "Key attributes of my service include:\n"
+    for attribute, details in attributes.items():
+        response += f"- {attribute.capitalize()}: {details['description']}\n"
+
+    # Match user input with interaction examples
+    for example in interaction_examples:
+        if example["user_query"].lower() in user_input.lower():
+            response += f"\nUser query: {example['user_query']}\nResponse: {example['response']}"
+            break
+    else:
+        response += "\nHow can I assist you with your financial inquiries today?"
+
+    return response
+
+# Main chatbot function
+def chatbot(user_input, persona_file):
+    persona_data = load_persona(persona_file)
+    persona = persona_data.get("persona", {})
+    response = generate_response(persona, user_input)
+    return response
+
+# Example usage
+if __name__ == "__main__":
+    persona_file = '/mnt/data/Default-Persona -Example-1.txt'
+    user_input = "How can I maximize my tax savings this year?"
+    response = chatbot(user_input, persona_file)
+    print(response)
