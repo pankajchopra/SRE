@@ -1,0 +1,64 @@
+ graph TD
+      User(User)
+      SupervisorAgent(Supervisor Agent)
+      PromptAnalyzer(Prompt Analyzer)
+      Decision{Decision}
+      TaskExtractorAgent(Task Extractor Agent)
+      ResponseGenerator(Response Generator)
+      ResponseAnalyser(Response Analyser)
+      Tool[Tool]
+      LLM(Gemini)
+      DefaultFinancialAdvisorPersona[Default Financial Advisor Persona]
+      RAGAgentNote[ReAct Agent decides what tools to call to complete the query]
+      RAGAgent(RAG Agent)
+      ApplicationInvokeAgent(Application Invoke Agent)
+      ApplicationInvokeAgentNote[Decides what tools to call to complete the information needed for invoking the Application]
+      ClientInformationExtractor(Client Information Extractor)
+      Tools1[(Tools)]
+      Tools2[(Tools)]
+      Tools3[(Tools)]
+
+      User -->|prompt| SupervisorAgent
+      SupervisorAgent -->|prompt| PromptAnalyzer
+      PromptAnalyzer --> |conditional edge| Decision
+      Decision --> |bad prompt|SupervisorAgent
+      Decision --> |good prompt|TaskExtractorAgent
+      TaskExtractorAgent --> |all tasks done| SupervisorAgent
+      SupervisorAgent -->|all responses| ResponseGenerator
+      ResponseGenerator --> LLM
+      ResponseGenerator -->|final response| ResponseAnalyser
+      ResponseAnalyser --> |use tool| Tool
+      ResponseAnalyser --> SupervisorAgent
+
+      DefaultFinancialAdvisorPersona --> SupervisorAgent
+      ApplicationInvokeAgentNote --> ApplicationInvokeAgent
+
+      TaskExtractorAgent --> RAGAgent
+      TaskExtractorAgent --> ApplicationInvokeAgent
+      TaskExtractorAgent --> ClientInformationExtractor
+
+      RAGAgent --> Tools1
+      ApplicationInvokeAgent --> Tools2
+      ClientInformationExtractor --> Tools3
+
+      subgraph RAGAgentNote[ReAct Agent Note]
+        RAGAgent
+      end
+
+      subgraph ApplicationInvokeAgentNote[Application Invoke Note]
+        ApplicationInvokeAgent
+      end
+
+      subgraph ClientInformationExtractorNote[Client Info Extractor Note]
+        ClientInformationExtractor
+      end
+
+      subgraph ToolsNote[Tools Note]
+        Tools1
+      end
+
+      classDef blue fill:#66b3ff,stroke:#333,stroke-width:2px
+      classDef purple fill:#d8b3ff,stroke:#333,stroke-width:2px
+
+      class User,TaskExtractorAgent,RAGAgentNote,ApplicationInvokeAgentNote,ClientInformationExtractorNote,ToolsNote blue
+      class DefaultFinancialAdvisorPersona purple

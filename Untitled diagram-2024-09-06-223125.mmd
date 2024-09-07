@@ -1,0 +1,69 @@
+---
+config:
+  theme: dark
+---
+
+flowchart LR
+ subgraph Launch_Pad["Launch_Pad"]
+        Folder1["Folder1"]
+        Folder2["Folder2"]
+  end
+ subgraph Data_Sources["Data_Sources"]
+        Datastores["Datastores"]
+        Other_Sources["Other_Sources"]
+  end
+ subgraph Controlled_Data_Movement["Controlled_Data_Movement"]
+        Raw_documents["Raw_documents"]
+        saferoom["saferoom"]
+        Scanned_Documents["Scanned_Documents"]
+        Scanned-Documents["Scanned-Documents"]
+  end
+
+ subgraph Data_Pipeline["Data_Pipeline"]
+          subgraph extract["extract"]
+            Extract-Metadata["Extract-Metadata"]
+            Extract_logical_chunks["Extract_logical_chunks"]
+         end
+         Generate-Embedding["Generate-Embedding"]
+        Json-Embedding-metadata["Json-Embedding-metadata"]
+        VectorSearchIndex["VectorSearchIndex"]
+        Vectorized-Data["Vectorized-Data"]
+        Generate-Embeddings["Generate-Embeddings"]
+  end
+  subgraph Vector-AI-Embedding-SearchAPI
+     Vector-AI-Embedding-Search-API["Vector-AI-Embedding-Search-API"]
+  end
+ subgraph AI_Model_Inferencing["AI_Model_Inferencing"]
+        Vector_Search["Vector_Search"]
+        CanonicalTaskAPIs["CanonicalTaskAPIs"]
+        Vector_searchIndex["Vector_searchIndex"]
+        NaturalLanguagetemplateQuery["NaturalLanguagetemplateQuery"]
+        FilteredByMetadata["FilteredByMetadata"]
+        WebAppApi["WebAppApi"]
+        HumanReadablAnswer["HumanReadablAnswer"]
+        Gemini_Pro_1.5["Gemini_Pro_1.5"]
+        Relevant_context+Query+Prompt["Relevant_context+Query+Prompt"]
+  end
+ subgraph Al_Model_Embedding["Al_Model_Embedding"]
+        Vertex_Al_Embedding["Vertex_Al_Embedding"]
+        Model_Textsmbedding["Model_Textsmbedding"]
+        Service_API["Service_API"]
+  end
+    Datastores --> Folder1
+    Other_Sources --> Folder2
+    Extract-Metadata --> Json-Embedding-metadata
+    Extract_logical_chunks --> Generate-Embedding
+    Generate-Embeddings --> Json-Embedding-metadata
+    Json-Embedding-metadata --> Vectorized-Data
+    Vectorized-Data --> VectorSearchIndex
+    Vector-AI-Embedding-Search-API --> Json-Embedding-metadata
+    CanonicalTaskAPIs --> Vector_Search & NaturalLanguagetemplateQuery & FilteredByMetadata & HumanReadablAnswer
+    NaturalLanguagetemplateQuery --> Vector_searchIndex
+    FilteredByMetadata --> Vector_searchIndex
+    Vector_searchIndex --> Relevant_context+Query+Prompt
+    Relevant_context+Query+Prompt --> Gemini_Pro_1.5
+    Gemini_Pro_1.5 --> CanonicalTaskAPIs
+    HumanReadablAnswer --> WebAppApi
+    Launch_Pad --> n1["Untitled Node"]
+
+
