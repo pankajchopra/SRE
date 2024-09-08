@@ -1,0 +1,217 @@
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.concurrent.CompletableFuture;
+
+@SpringBootApplication
+@EnableAsync
+public class DemoApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(DemoApplication.class, args);
+    }
+}
+
+@RestController
+public class LoggingController {
+
+    private final AsyncLoggingService asyncLoggingService;
+
+    public LoggingController(AsyncLoggingService asyncLoggingService) {
+        this.asyncLoggingService = asyncLoggingService;
+    }
+
+    @GetMapping("/log")
+    public String logSomething() {
+        asyncLoggingService.processLogAsync();
+        return "Request received! Logging will happen asynchronously.";
+    }
+}
+
+@Service
+class AsyncLoggingService {
+
+    @Async
+    public CompletableFuture<Void> processLogAsync() {
+        // Simulate a long-running task
+        try {
+            Thread.sleep(5000);  // Simulate some work
+            System.out.println("Log processed asynchronously.");
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return CompletableFuture.completedFuture(null);
+    }
+}
+
+
+Creating a New Thread: A new thread is created to handle the log processing task. This thread runs concurrently with the controller’s main thread.
+Non-blocking: The controller thread returns immediately, while the new thread handles the log processing in the background.
+
+
+To run a separate thread in a Spring Boot controller, you can use several approaches depending on your specific use case. The most common ways to create and manage threads in Spring Boot are by:
+
+Creating a Thread Manually
+Using Spring’s @Async Annotation
+Using an ExecutorService
+I'll walk through each approach below.
+
+1. Manually Creating a Thread
+You can manually create a thread in your Spring Boot controller using the standard Java Thread class. However, this is not recommended for large-scale applications, as manual thread management can become cumbersome and hard to manage.
+
+Example: Manual Thread Creation
+java
+Copy code
+@RestController
+public class LoggingController {
+
+    @GetMapping("/log")
+    public String logSomething() {
+        new Thread(() -> {
+            // Long-running task or log processing
+            try {
+                Thread.sleep(5000);  // Simulate some work
+                System.out.println("Log processed in a separate thread.");
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }).start();
+        
+        return "Request received! Logging will happen in the background.";
+    }
+}
+In this example:
+
+A new thread is created for each request.
+The main controller thread immediately returns a response, while the logging task continues in the background.
+2. Using Spring’s @Async Annotation
+Spring Boot provides an easy way to run asynchronous tasks with the @Async annotation. This is a more convenient and scalable solution than manually creating threads.
+
+Steps:
+Enable Async Support: Add @EnableAsync to one of your configuration classes or the main Spring Boot application class.
+Create an Async Method: Annotate the method that you want to run asynchronously with @Async.
+Example: Using @Async in a Spring Boot Controller
+java
+Copy code
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.concurrent.CompletableFuture;
+
+@SpringBootApplication
+@EnableAsync  // Enable async support
+public class DemoApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(DemoApplication.class, args);
+    }
+}
+
+@RestController
+public class LoggingController {
+
+    private final AsyncLoggingService asyncLoggingService;
+
+    public LoggingController(AsyncLoggingService asyncLoggingService) {
+        this.asyncLoggingService = asyncLoggingService;
+    }
+
+    @GetMapping("/log")
+    public String logSomething() {
+        asyncLoggingService.processLogAsync();
+        return "Request received! Logging will happen asynchronously.";
+    }
+}
+
+@Service
+class AsyncLoggingService {
+
+    @Async
+    public CompletableFuture<Void> processLogAsync() {
+        // Long-running task
+        try {
+            Thread.sleep(5000);  // Simulate work
+            System.out.println("Log processed asynchronously.");
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return CompletableFuture.completedFuture(null);
+    }
+}
+In this example:
+
+@EnableAsync is added to the Spring Boot application to enable asynchronous processing.
+The @Async annotation on processLogAsync() runs the method asynchronously.
+CompletableFuture is used to handle the async result. You can return any type, but CompletableFuture is often used to represent the async computation.
+Pros:
+
+The @Async annotation makes it easy to offload tasks to a separate thread pool.
+No need for manual thread management.
+3. Using ExecutorService for More Control
+If you need more control over the threads, you can use ExecutorService to manage a thread pool. 
+This allows you to control the number of threads and manage their lifecycle explicitly.
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+@RestController
+public class LoggingController {
+
+    private final ExecutorService executorService = Executors.newFixedThreadPool(10); // Thread pool with 10 threads
+
+    @GetMapping("/log")
+    public String logSomething() {
+        executorService.submit(() -> {
+            // Long-running task or log processing
+            try {
+                Thread.sleep(5000);  // Simulate work
+                System.out.println("Log processed in a separate thread from thread pool.");
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        });
+        
+        return "Request received! Logging will happen in the background using a thread pool.";
+    }
+}
+-------
+<configuration>
+
+    <!-- Console Appender for outputting logs to the console -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Asynchronous Appender -->
+    <appender name="ASYNC" class="ch.qos.logback.classic.AsyncAppender">
+        <!-- Queue Size: Set a large queue size based on your logging volume -->
+        <queueSize>50000</queueSize>
+        
+        <!-- Discarding Threshold: Controls when to start discarding logs if the queue is full (0 means no discarding) -->
+        <discardingThreshold>0</discardingThreshold>
+        
+        <!-- Never block the main thread, even if the queue is full -->
+        <neverBlock>true</neverBlock>
+        
+        <!-- Include references to other appenders (e.g., console) -->
+        <appender-ref ref="CONSOLE"/>
+    </appender>
+
+    <!-- Root logger: Sends all logs to the async appender -->
+    <root level="INFO">
+        <appender-ref ref="ASYNC"/>
+    </root>
+</configuration>
+
+
