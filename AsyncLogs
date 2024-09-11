@@ -213,5 +213,170 @@ public class LoggingController {
         <appender-ref ref="ASYNC"/>
     </root>
 </configuration>
+-----------------------------------------
+
+Yes, you can implement a scheduler in each Spring Boot instance that checks the database and updates the necessary data across all instances. This is a viable solution to ensure consistency between your multiple cloud instances when you don’t have access to a distributed cache like Redis or a centralized cache management solution.
+
+Here’s how you can implement this approach effectively:
+
+### 1. **Use a Scheduler in Spring Boot**
+
+Spring Boot provides support for scheduling tasks using the `@Scheduled` annotation. You can set up a periodic scheduler that checks the database and updates the cache or any other data in all instances.
+
+#### Steps to Implement the Scheduler:
+
+1. **Enable Scheduling in Spring Boot**:
+   - Add the `@EnableScheduling` annotation to your Spring Boot main class to enable scheduling.
+   ```java
+   @SpringBootApplication
+   @EnableScheduling
+   public class MyApplication {
+       public static void main(String[] args) {
+           SpringApplication.run(MyApplication.class, args);
+       }
+   }
+   ```
+
+2. **Implement the Scheduler Logic**:
+   - Create a service class that will check the database at regular intervals. This service will query the database for any new or updated data, and then propagate the updates to the local cache of each instance.
+
+   Example scheduler service:
+   ```java
+   @Service
+   public class DataUpdateScheduler {
+
+       @Autowired
+       private MyDatabaseService myDatabaseService;
+
+       @Autowired
+       private CacheService cacheService;
+
+       // Run this method every 10 minutes (configurable)
+       @Scheduled(fixedRate = 600000)
+       public void checkAndUpdateData() {
+           // Fetch data from the database (you can add filtering logic for changed data)
+           List<MyEntity> updatedData = myDatabaseService.fetchUpdatedData();
+
+           // Update the cache or any other in-memory data structures
+           cacheService.updateCache(updatedData);
+       }
+   }
+   ```
+
+3. **Define the Database Service**:
+   - The `MyDatabaseService` is responsible for fetching the updated data from the database. You can implement a strategy where only the modified or new records are fetched to reduce load.
+
+   Example:
+   ```java
+   @Service
+   public class MyDatabaseService {
+
+       @Autowired
+       private MyEntityRepository myEntityRepository;
+
+       public List<MyEntity> fetchUpdatedData() {
+           // Fetch records that were updated in the last X minutes (you can use timestamps)
+           return myEntityRepository.findRecentUpdates();
+       }
+   }
+   ```
+
+4. **Update Cache or In-Memory Data**:
+   - The `CacheService` is responsible for updating the local cache (or any other in-memory storage) of the current instance. Each instance would have its own scheduler and its own cache, so the updates will ensure all instances are synchronized via database polling.
+
+   Example:
+   ```java
+   @Service
+   public class CacheService {
+
+       @Autowired
+       private CacheManager cacheManager;
+
+       public void updateCache(List<MyEntity> updatedData) {
+           // Iterate through updated data and update the cache
+           for (MyEntity entity : updatedData) {
+               cacheManager.put(entity.getId(), entity);
+           }
+       }
+   }
+   ```
+
+5. **Optimize Database Queries**:
+   - To reduce the load on the database, only query for the data that has been updated recently (e.g., based on a timestamp).
+   - Use an efficient indexing strategy in your database to support these queries.
+
+### 2. **Considerations for Multi-Instance Synchronization**
+
+In a multi-instance environment, you should ensure the following:
+
+- **Concurrent Schedulers**: Each instance will run its own scheduler, so they will each query the database and update their own local caches. This ensures that all instances stay up to date with the latest data.
+  
+- **Atomic Updates**: If your scheduler is updating data that might conflict (e.g., shared state), ensure that the updates are atomic and handled appropriately to avoid race conditions.
+
+- **Database as Source of Truth**: In this architecture, the database becomes the "source of truth." All instances regularly query the database for changes, so they eventually become consistent, even if some instance misses an update initially.
+
+- **Cache Invalidation**: If using an in-memory cache, make sure to invalidate stale data. You can either set expiration policies on the cached items or explicitly clear the cache before updating it.
+
+### 3. **Avoid Overlapping Schedules (Optional)**
+
+If you don’t want all instances to query the database at the same time, you can stagger the schedule or add a mechanism to ensure that only one instance performs the update at a time.
+
+One approach is using a **leader election mechanism**, where only one instance is responsible for updating the data and others wait or check for updates.
+
+Here’s a way to achieve this:
+
+- **Database Locking**: Use a table in the database to track the instance responsible for running the update (i.e., a "leader"). Before each scheduled task, check if the current instance is the leader, and only allow the leader to execute the update.
+
+  Example:
+  ```java
+  @Scheduled(fixedRate = 600000)
+  public void checkAndUpdateData() {
+      // Check if this instance is the leader
+      if (myDatabaseService.isCurrentInstanceLeader()) {
+          List<MyEntity> updatedData = myDatabaseService.fetchUpdatedData();
+          cacheService.updateCache(updatedData);
+      }
+  }
+  ```
+
+- **Distributed Locking**: If using a distributed database like PostgreSQL or MySQL, you can implement distributed locking to ensure that only one instance performs the update.
+
+### 4. **Example Database Locking Mechanism**
+
+You can create a simple table to manage the scheduler lock:
+```sql
+CREATE TABLE scheduler_lock (
+    id SERIAL PRIMARY KEY,
+    locked_by VARCHAR(255),
+    lock_time TIMESTAMP
+);
+```
+
+Then, before running the scheduled task, attempt to acquire the lock in the database:
+```java
+public boolean isCurrentInstanceLeader() {
+    String instanceId = getInstanceId(); // Get the unique ID of the current instance
+
+    // Try to acquire lock
+    return jdbcTemplate.update("UPDATE scheduler_lock SET locked_by = ?, lock_time = NOW() WHERE locked_by IS NULL OR lock_time < NOW() - INTERVAL '5 MINUTES'",
+            instanceId) > 0;
+}
+```
+
+### 5. **Drawbacks of This Approach**
+- **Database Load**: Frequent polling from all instances can increase the load on the database.
+- **Eventual Consistency**: Since the scheduler runs periodically, there may be some delay in synchronizing data across instances, leading to eventual consistency rather than real-time updates.
+
+### 6. **Optimizing the Scheduler**:
+   - **Polling Interval**: Adjust the polling interval based on the data volatility (e.g., every few minutes for frequently changing data).
+   - **Batching Updates**: If a large amount of data changes frequently, you can batch updates in the cache to minimize the number of database queries.
+
+### Conclusion
+
+Using a scheduler in each instance that checks the database and updates the instance’s local cache or memory is a 
+feasible solution when you cannot use Redis or another distributed cache. Ensure that your scheduler is well-optimized 
+and consider adding locking or leader election if needed to avoid race conditions or redundant database access across 
+instances.
+
 
 
