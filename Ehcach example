@@ -1,0 +1,184 @@
+To configure EhCache as the caching provider in a Spring Boot application, you’ll need to define an EhCache XML configuration file and set up your Spring Boot app to use it. This example will demonstrate how to integrate the latest version of EhCache with Spring Boot, including defining cache settings such as heap size, max entries, and avoiding disk caching.
+
+### Steps:
+
+1. **Add the EhCache dependency to your `pom.xml`**:
+   Add the following dependencies for Spring Boot and EhCache:
+
+```xml
+<dependencies>
+    <!-- Spring Boot Starter Web -->
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-web</artifactId>
+    </dependency>
+
+    <!-- Spring Boot Starter Cache -->
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-cache</artifactId>
+    </dependency>
+
+    <!-- EhCache 3.x Dependency -->
+    <dependency>
+        <groupId>org.ehcache</groupId>
+        <artifactId>ehcache</artifactId>
+        <version>3.10.8</version> <!-- Use the latest version available -->
+    </dependency>
+</dependencies>
+```
+
+2. **EhCache Configuration File** (`ehcache.xml`):
+   Create an `ehcache.xml` file in your `src/main/resources` folder to define the cache configuration. This file will configure cache size (heap only, no disk overflow), max entries, and other relevant settings.
+
+```xml
+<config
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="http://www.ehcache.org/v3"
+    xsi:schemaLocation="http://www.ehcache.org/v3 http://www.ehcache.org/schema/ehcache-core.xsd">
+
+    <cache alias="myCache">
+        <expiry>
+            <!-- Specify TTL for cached entries (e.g., 10 minutes) -->
+            <ttl unit="minutes">10</ttl>
+        </expiry>
+
+        <resources>
+            <!-- Define heap size (e.g., max 100 entries in memory) -->
+            <heap unit="entries">100</heap>
+
+            <!-- No disk caching -->
+        </resources>
+    </cache>
+
+</config>
+```
+
+In this configuration:
+- `ttl` sets the time-to-live (TTL) for cached entries.
+- `heap unit="entries"` limits the number of entries held in memory (e.g., 100 entries).
+- No disk caching is defined (it's purely in-memory).
+
+3. **Spring Boot Cache Configuration** (`application.yml`):
+   In your `application.yml` file, configure Spring Boot to use EhCache:
+
+```yaml
+spring:
+  cache:
+    type: ehcache  # Specify EhCache as the cache provider
+  ehcache:
+    config: classpath:ehcache.xml  # Point to your EhCache configuration file
+```
+
+4. **EhCache Manager Configuration in Spring Boot**:
+   You need to create a cache manager that uses the `ehcache.xml` configuration file. Here's how you can define the cache manager in Spring Boot.
+
+```java
+import org.ehcache.jsr107.Eh107Configuration;
+import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.cache.jcache.JCacheCacheManager;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+import javax.cache.CacheManager;
+import javax.cache.Caching;
+import javax.cache.spi.CachingProvider;
+import java.net.URL;
+
+@Configuration
+@EnableCaching
+public class CacheConfig {
+
+    @Bean
+    public CacheManager cacheManager() {
+        CachingProvider provider = Caching.getCachingProvider();
+        URL configUrl = getClass().getResource("/ehcache.xml");
+        return provider.getCacheManager(configUrl, getClass().getClassLoader());
+    }
+}
+```
+
+This custom `CacheConfig` class reads the `ehcache.xml` file from the classpath and configures the `EhCacheManager`.
+
+5. **Service with Cache Logic**:
+   The service class remains the same as before, with annotations for caching using `EhCache` now:
+
+```java
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.stereotype.Service;
+
+import java.util.Map;
+
+@Service
+public class CacheService {
+
+    @CachePut(value = "myCache", key = "#key")
+    public Map<String, Object> storeInCache(String key, Map<String, Object> value) {
+        return value;
+    }
+
+    @Cacheable(value = "myCache", key = "#key")
+    public Map<String, Object> getFromCache(String key) {
+        return null; // Will return cached value if present, null if not
+    }
+}
+```
+
+6. **Controller to Test Cache**:
+   The controller also remains the same, with endpoints for storing and retrieving data from the cache.
+
+```java
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
+
+@RestController
+@RequestMapping("/api/cache")
+public class CacheController {
+
+    private final CacheService cacheService;
+
+    public CacheController(CacheService cacheService) {
+        this.cacheService = cacheService;
+    }
+
+    @PostMapping("/store")
+    public Map<String, Object> store(@RequestParam String key, @RequestBody Map<String, Object> value) {
+        return cacheService.storeInCache(key, value);
+    }
+
+    @GetMapping("/retrieve")
+    public Map<String, Object> retrieve(@RequestParam String key) {
+        return cacheService.getFromCache(key);
+    }
+}
+```
+
+### Example Requests:
+
+1. **Store a Map in Cache**:
+
+```bash
+POST /api/cache/store?key=myKey
+Content-Type: application/json
+
+{
+    "field1": "value1",
+    "field2": 123,
+    "field3": true
+}
+```
+
+2. **Retrieve the Map from Cache**:
+
+```bash
+GET /api/cache/retrieve?key=myKey
+```
+
+### Summary:
+- You’ve integrated EhCache with Spring Boot and created a cache configuration that stores data in-memory only (heap-based), without disk caching.
+- The cache is limited to 100 entries and stores data for 10 minutes (TTL).
+- You can modify the `ehcache.xml` to adjust the cache size, expiration policies, and other settings according to your requirements.
+
+This setup should provide efficient in-memory caching with no persistence to disk.
