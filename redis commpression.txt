@@ -1,0 +1,115 @@
+
+    <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-compress</artifactId>
+        <version>1.21</version> <!-- Use the latest version -->
+    </dependency>
+
+
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.stereotype.Service;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
+
+@Service
+public class RedisService {
+
+    private final StringRedisTemplate redisTemplate;
+
+    @Autowired
+    public RedisService(StringRedisTemplate redisTemplate) {
+        this.redisTemplate = redisTemplate;
+    }
+
+    public void saveCompressedJson(String key, String json) throws IOException {
+        byte[] compressedData = compress(json);
+        redisTemplate.opsForValue().set(key, new String(compressedData));
+    }
+
+    public String getDecompressedJson(String key) throws IOException {
+        String compressedData = redisTemplate.opsForValue().get(key);
+        if (compressedData != null) {
+            return decompress(compressedData.getBytes());
+        }
+        return null;
+    }
+
+    private byte[] compress(String data) throws IOException {
+        try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
+             GZIPOutputStream gzip = new GZIPOutputStream(bos)) {
+            gzip.write(data.getBytes());
+            gzip.close();
+            return bos.toByteArray();
+        }
+    }
+
+    private String decompress(byte[] compressedData) throws IOException {
+        try (ByteArrayInputStream bis = new ByteArrayInputStream(compressedData);
+             GZIPInputStream gis = new GZIPInputStream(bis)) {
+            byte[] buffer = new byte[256];
+            StringBuilder outStr = new StringBuilder();
+            int len;
+            while ((len = gis.read(buffer)) != -1) {
+                outStr.append(new String(buffer, 0, len));
+            }
+            return outStr.toString();
+        }
+    }
+}
+
+
+
+<dependency>
+    <groupId>com.github.luben</groupId>
+    <artifactId>zstd-jni</artifactId>
+    <version>1.5.0-1</version> <!-- Check for the latest version -->
+</dependency>
+
+
+
+import com.github.luben.zstd.Zstd;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.stereotype.Service;
+
+import java.nio.charset.StandardCharsets;
+
+@Service
+public class RedisService {
+
+    private final StringRedisTemplate redisTemplate;
+
+    @Autowired
+    public RedisService(StringRedisTemplate redisTemplate) {
+        this.redisTemplate = redisTemplate;
+    }
+
+    public void saveCompressedJson(String key, String json) {
+        byte[] compressedData = compress(json);
+        redisTemplate.opsForValue().set(key, new String(compressedData, StandardCharsets.ISO_8859_1)); // Use ISO_8859_1 for byte compatibility
+    }
+
+    public String getDecompressedJson(String key) {
+        String compressedData = redisTemplate.opsForValue().get(key);
+        if (compressedData != null) {
+            return decompress(compressedData.getBytes(StandardCharsets.ISO_8859_1));
+        }
+        return null;
+    }
+
+    private byte[] compress(String data) {
+        byte[] input = data.getBytes(StandardCharsets.UTF_8);
+        return Zstd.compress(input);
+    }
+
+    private String decompress(byte[] compressedData) {
+        byte[] decompressedData = Zstd.decompress(compressedData, (int) Zstd.decompressBound(compressedData));
+        return new String(decompressedData, StandardCharsets.UTF_8);
+    }
+}
