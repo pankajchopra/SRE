@@ -1,0 +1,23 @@
+Problem:
+"a CTO of a financial company. your company is going to provide a conversational Chatbot( pointing to LLM) to its financial advisors. The Financial Advisor deals with the company's clients who come to the Financial advisor to manage their portfolio, estate planning, retirement planning, and Money for education plans. The Financial advisor makes a plan for the customer. Conversation Chat will be using RAG that will contain Company Policies, procedures, and rules.  Chatbot will have access to the client's whole profile, biographical information, Beneficiaries, and portfolio. The question is when designing 
+ and Conversational Chatbot what precautions should be taken so that the chatbot does not hallucinate nor suggest something that does not make sense Summarize the solution ever is asked very precise to the point.. Also include the standard checks which each Chatbot should must have.
+
+Solution:
+
+ design a reliable conversational chatbot for financial advisors, the following precautions and checks should be implemented:
+
+1. **Strict RAG Implementation**: Ensure the chatbot relies heavily on retrieval from the company’s verified policies, procedures, and client-specific data to avoid generating unsupported or hallucinated responses.
+
+2. **Real-Time Data Access**: The chatbot must access up-to-date client profiles and portfolio information in real-time, ensuring advice is relevant and accurate.
+
+3. **Contextual Awareness**: Implement logic to maintain conversation context and prevent the chatbot from providing generic or out-of-context suggestions.
+
+4. **Validation Layers**: Introduce multiple layers of checks where the chatbot's suggestions are validated against company policies and regulatory compliance before being presented to the advisor or client.
+
+5. **Fallback Mechanism**: If the chatbot is uncertain or lacks sufficient data, it should gracefully defer to a human advisor or request further input rather than attempting to generate a speculative response.
+
+6. **Standard Checks**:
+   - **Data Privacy**: Ensure strict adherence to data privacy laws (e.g., GDPR, CCPA) to protect client information.
+   - **Bias Mitigation**: Regularly audit the chatbot's output to detect and eliminate any potential biases.
+   - **Continuous Learning**: Implement a feedback loop where the chatbot learns from corrections made by advisors, continuously improving accuracy.
+   - **Clear Disclaimer**: Always include a disclaimer that the chatbot's suggestions are for guidance and must be reviewed by a human advisor.
