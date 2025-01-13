@@ -1,0 +1,39 @@
+mindmap
+  root((Activities))
+    Office
+      To_Do
+        List of Pending 
+          Redis
+          Logging
+           Scheduling Dashboard
+          Tech Upgade
+          OpenShift Container Platform
+          Azure
+
+        Career
+    Finance
+      Shares
+      Bank
+      Invest
+    Home
+      Cleaning
+      Lawn
+        Garden
+        Snow
+      Fixing
+      Maintenance
+    Health
+      Exercise
+      Mental
+        Walk
+        Yoga
+        Social
+      Food
+        Cook
+        Bake
+    Hobby
+      Movie_Making
+      Drawing
+    Social
+      Friends
+      Movie
