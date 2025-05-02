@@ -1,0 +1,68 @@
+graph TB
+    subgraph Database Service
+        direction TB
+        
+        APIG[API Gateway] --> Auth[Authentication & Authorization]
+        Auth --> DBAPI[Database API Service]
+        
+        subgraph CRUD API Endpoints
+            direction TB
+            DBAPI --> UserAPI[User APIs]
+            DBAPI --> ConvAPI[Conversation APIs]
+            DBAPI --> PrefAPI[Preferences APIs]
+            
+            subgraph User APIs
+                direction LR
+                U1[POST /api/users] --> UC[Create User]
+                U2[GET /api/users/&#123;id&#125;] --> UR[Read User]
+                U3[PUT /api/users/&#123;id&#125;] --> UU[Update User]
+                U4[DELETE /api/users/&#123;id&#125;] --> UD[Delete User]
+                U5[GET /api/users] --> UL[List Users]
+            end
+            
+            subgraph Conversation APIs
+                direction LR
+                C1[POST /api/conversations] --> CC[Create Conversation]
+                C2[GET /api/conversations/&#123;id&#125;] --> CR[Read Conversation]
+                C3[PUT /api/conversations/&#123;id&#125;] --> CU[Update Conversation]
+                C4[DELETE /api/conversations/&#123;id&#125;] --> CD[Delete Conversation]
+                C5[GET /api/conversations] --> CL[List Conversations]
+                C6[POST /api/conversations/&#123;id&#125;/messages] --> CM[Add Message]
+                C7[GET /api/users/&#123;id&#125;/conversations] --> CUL[List User Conversations]
+            end
+            
+            subgraph Preferences APIs
+                direction LR
+                P1[POST /api/preferences] --> PC[Create Preferences]
+                P2[GET /api/preferences/&#123;id&#125;] --> PR[Read Preferences]
+                P3[PUT /api/preferences/&#123;id&#125;] --> PU[Update Preferences]
+                P4[DELETE /api/preferences/&#123;id&#125;] --> PD[Delete Preferences]
+                P5[GET /api/users/&#123;id&#125;/preferences] --> PUP[Get User Preferences]
+            end
+        end
+        
+        subgraph Data Access Layer
+            direction TB
+            DAL[Data Access Layer] --> UM[User Model]
+            DAL --> CM1[Conversation Model]
+            DAL --> PM[Preferences Model]
+            DAL --> QBuilder[Query Builder]
+            DAL --> Cache[Cache Layer]
+        end
+        
+        UserAPI --> DAL
+        ConvAPI --> DAL
+        PrefAPI --> DAL
+    end
+    
+    subgraph MongoDB Cluster
+            MongoDb[(Primary Node)]    
+    end
+
+
+    DAL --> MongoDb
+    Cache -. Cache Invalidation .-> DAL
+    
+   
+    
+    

@@ -1,0 +1,71 @@
+---
+config:
+  theme: neutral
+  layout: fixed
+  look: handDrawn
+---
+flowchart LR
+ subgraph AU["Admin Utility Tool"]
+        AdminUI[["Admin Utility"]]
+  end
+ subgraph EU["Advisor Gateway"]
+        UI[["AG End User"]]
+  end
+ subgraph App["Spring Boot Application"]
+        AuthAPI[/"getAppsConfigForUser/V1 API"/]
+        CircuitBreaker[["Resilience4j CircuitBreaker"]]
+        RedisKeyEventListener[["RedisKeyEventListener"]]
+  end
+ subgraph Cache["Redis Cluster"]
+        Redis[("Hash: entitlements:ppid:elid")]
+  end
+ subgraph Monitoring["Monitoring and Logging"]
+        KeyspaceNotifier[("Redis Keyspace Notifications")]
+        MetricCollector[("Prometheus & Grafana OR Splunk Logging")]
+  end
+ subgraph DB["Primary Mongo Database"]
+        UserDB[("AppsRegistry\nother Tables")]
+  end
+ subgraph PreWarm["Batch Job"]
+        PreWarmJob[["Scheduled Cache Batch Job"]]
+  end
+ subgraph Cache1["Redis Cluster"]
+        Redis1[("Hash: entitlements:ppid:elid")]
+  end
+ subgraph Scheduled["Scheduled Jobs"]
+    direction LR
+        PreWarm
+        Cache1
+  end
+    UI -- |POST /getAppsConfigForUser| --> AuthAPI
+    AuthAPI -- "|1. call Redis|" --> CircuitBreaker
+    CircuitBreaker -- "|2. HGETALL entitlements:user:userId|" --> Redis
+    Redis -- "|3a. Hit|" --> AuthAPI
+    Redis -- "|3b. Miss|" --> CircuitBreaker
+    CircuitBreaker -- "|4b. fallback to DB|" --> UserDB
+    UserDB -- |SELECT entitlements| --> AuthAPI
+    AuthAPI -- |HMSET entitlements:ppid:elid| --> Redis
+    AdminUI -- |POST /cache/ppid/elid/refresh| --> AuthAPI
+    AuthAPI -- |@CacheEvict reload| --> Redis
+    AuthAPI -- |emit metrics| --> MetricCollector
+    Redis -- |emit keyspace events| --> RedisKeyEventListener
+    KeyspaceNotifier -- |alerts| --> MetricCollector
+    PreWarmJob -- |HMSET entitlements:ppid:elid| --> Redis1 & Redis1
+    RedisKeyEventListener --> MetricCollector & AuthAPI
+     AdminUI:::normalNodes
+     UI:::normalNodes
+     AuthAPI:::normalNodes
+     CircuitBreaker:::normalNodes
+     RedisKeyEventListener:::normalNodes
+     Redis:::normalNodes
+     KeyspaceNotifier:::normalNodes
+     MetricCollector:::normalNodes
+     UserDB:::normalNodes
+     PreWarmJob:::normalNodes
+     Redis1:::normalNodes
+    classDef normalNodes font-size:18px
+    classDef subgraphs font-size:18px
+    style Monitoring fill:#E1BEE7
+    style Cache fill:#FFCDD2
+    style AU fill:#FFFFFF
+    style Scheduled fill:#C8E6C9

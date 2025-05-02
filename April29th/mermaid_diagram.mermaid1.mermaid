@@ -1,0 +1,75 @@
+graph LR
+    subgraph User Interaction
+        A[User Query] --> B(Query Router)
+        B -- Routes to --> C{Tool Selection Logic}
+        C -- Selects Tool --> D[Selected Tool]
+        D -- Tool Execution --> E(Response Generation)
+        E -- Enhanced by RAG --> F(Final Response)
+        F --> M[Agent]
+        M --> G[User Output]
+    end
+    subgraph Core Components
+        B -- Considers --> H[Conversation Memory]
+        C -- Uses --> I[Available Tools]
+        E -- Leverages --> J[LightRAG Framework]
+        J -- Uses --> K[Vector Store]
+        J -- Uses --> L[Graph-based Entity Search (Optional)]
+        J -- Chooses Mode --> N{RAG Mode (Mix, Global, Local, Naive)}
+        E -- Uses --> O[Response Refinement Tool]
+        F --> O
+        M --> O{{MongoDB}}
+    end
+    subgraph Tool Suite
+        I --> P[Stock Information Tool]
+        I --> Q[Account API Tool]
+        I --> R[Enhanced Search Tool]
+        I --> S[Document Processing Tool]
+        I --> O
+    end
+    
+    subgraph MongoDB
+        O -- Contains --> O1[(Collection: User Information)]
+        O -- Contains --> O2[(Collection: Conversation History)]
+    end
+    %% Styling
+    style A fill:#90EE90,stroke:#333,stroke-width:2px
+    style B fill:#87CEFA,stroke:#333,stroke-width:2px
+    style C fill:#FFFFE0,stroke:#333,stroke-width:2px
+    style D fill:#87CEFA,stroke:#333,stroke-width:2px
+    style E fill:#87CEFA,stroke:#333,stroke-width:2px
+    style F fill:#90EE90,stroke:#333,stroke-width:2px
+    style G fill:#90EE90,stroke:#333,stroke-width:2px
+    style H fill:#E0FFFF,stroke:#333,stroke-width:2px
+    style I fill:#E0FFFF,stroke:#333,stroke-width:2px
+    style J fill:#FFE4C4,stroke:#333,stroke-width:2px
+    style K fill:#E6E6FA,stroke:#333,stroke-width:2px
+    style L fill:#E6E6FA,stroke:#333,stroke-width:2px
+    style M fill:#E6E6FA,stroke:#333,stroke-width:2px
+    style N fill:#E6E6FA,stroke:#333,stroke-width:2px
+    style O fill:#E0FFFF,stroke:#333,stroke-width:2px
+    style O1 fill:#ADD8E6,stroke:#333,stroke-width:2px
+    style O2 fill:#ADD8E6,stroke:#333,stroke-width:2px
+    style P fill:#AFEEEE,stroke:#333,stroke-width:2px
+    style Q fill:#AFEEEE,stroke:#333,stroke-width:2px
+    style R fill:#AFEEEE,stroke:#333,stroke-width:2px
+    style S fill:#AFEEEE,stroke:#333,stroke-width:2px
+    %% Flow line styling
+    linkStyle 0 stroke:#4CAF50,stroke-width:2px,curve:smooth
+    linkStyle 1 stroke:#4CAF50,stroke-width:2px,curve:smooth
+    linkStyle 2 stroke:#4CAF50,stroke-width:2px,curve:smooth
+    linkStyle 3 stroke:#4CAF50,stroke-width:2px,curve:smooth
+    linkStyle 4 stroke:#4CAF50,stroke-width:2px,curve:smooth
+    linkStyle 5 stroke:#4CAF50,stroke-width:2px,curve:smooth
+    linkStyle 6 stroke:#4CAF50,stroke-width:2px,curve:smooth
+    linkStyle 7 stroke:#808080,stroke-width:2px,curve:smooth
+    linkStyle 8 stroke:#808080,stroke-width:2px,curve:smooth
+    linkStyle 9 stroke:#808080,stroke-width:2px,curve:smooth
+    linkStyle 10 stroke:#808080,stroke-width:2px,curve:smooth
+    linkStyle 11 stroke:#808080,stroke-width:2px,curve:smooth
+    linkStyle 12 stroke:#808080,stroke-width:2px,curve:smooth
+    linkStyle 13 stroke:#808080,stroke-width:2px,curve:smooth
+    linkStyle 14 stroke:#808080,stroke-width:2px,curve:smooth
+    linkStyle 15 stroke:#808080,stroke-width:2px,curve:smooth
+    linkStyle 16 stroke:#808080,stroke-width:2px,curve:smooth
+    linkStyle 17 stroke:#808080,stroke-width:2px,curve:smooth
+    linkStyle 18 stroke:#808080,stroke-width:2px,curve:smooth

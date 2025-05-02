@@ -1,0 +1,56 @@
+graph LR
+    subgraph User_Interaction
+        A[User Query] --> B(Query Router)
+        B --> C{Tool Selection Logic}
+        C --> D[Selected Tool]
+        D --> E(Response Generation)
+        E --> F(Final Response)
+        F --> M[Agent]
+        M --> G[User Output]
+    end
+    
+    subgraph Core_Components
+        B -.-> H[Conversation Memory]
+        C -.-> I[Available Tools]
+        E -.-> J[LightRAG Framework]
+        J -.-> K[Vector Store]
+        J -.-> L[Graph-based Entity Search]
+        J -.-> N{RAG Mode Selection}
+        E -.-> O[Response Refinement Tool]
+        F -.-> O
+        M -.-> T[(MongoDB)]
+    end
+    
+    subgraph Tool_Suite
+        I --> P[Stock Information Tool]
+        I --> Q[Account API Tool]
+        I --> R[Enhanced Search Tool]
+        I --> S[Document Processing Tool]
+        I --> O
+    end
+    
+    subgraph MongoDB_Collections
+        T --> O1[(User Information)]
+        T --> O2[(Conversation History)]
+    end
+    
+    %% Styling
+    classDef userInput fill:#90EE90,stroke:#333,stroke-width:2px
+    classDef processing fill:#87CEFA,stroke:#333,stroke-width:2px
+    classDef decision fill:#FFFFE0,stroke:#333,stroke-width:2px
+    classDef output fill:#90EE90,stroke:#333,stroke-width:2px
+    classDef component fill:#E0FFFF,stroke:#333,stroke-width:2px
+    classDef rag fill:#FFE4C4,stroke:#333,stroke-width:2px
+    classDef storage fill:#E6E6FA,stroke:#333,stroke-width:2px
+    classDef tool fill:#AFEEEE,stroke:#333,stroke-width:2px
+    classDef database fill:#ADD8E6,stroke:#333,stroke-width:2px
+    
+    class A,G userInput
+    class B,D,E processing
+    class C decision
+    class F,M output
+    class H,I,O component
+    class J rag
+    class K,L,N storage
+    class P,Q,R,S tool
+    class T,O1,O2 database

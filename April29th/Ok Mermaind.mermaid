@@ -1,0 +1,68 @@
+graph LR
+    subgraph User Interaction
+        A["User Query"] --> B(Query Routing System);
+    end
+
+    subgraph Query Routing System
+        B -- LLM for Classification --> C{Tool Selection};
+    end
+
+    subgraph Tool Suite
+        subgraph Stock Information Tool
+            D[Yahoo Finance API]
+        end
+        subgraph Account API Tool
+            E[localhost\:8080/api/account/v1]
+        end
+        subgraph Enhanced Search Tool
+            F[LLM for Rephrasing] --> G[Web Search];
+        end
+        subgraph Document Processing Tool
+            H[LightRAG Document Processor] -- Fallback --> I[LangChain Document Loaders];
+            J(Document Files) --> H;
+            J --> I;
+        end
+        subgraph Response Refinement Tool
+            K[LLM for Tone Adjustment & Summarization]
+        end
+
+        C -- Stock Info--> D;
+        C -- Account 360 API --> E;
+        C -- Enhanced Search --> F;
+        C -- Document Processing --> H;
+        C -- Other --> G;
+        D --> L(Tool Result Analysis);
+        E --> L;
+        G --> L;
+        H --> L;
+    end
+
+    L -- Update Context --> M{Agent Decision};
+    M -- More Info Needed --> B;
+    M -- All Info Gathered --> N(Response Refinement Tool);
+    N --> O{Final Response};
+
+    subgraph Memory and Context Management
+        P[ConversationBufferMemory] -- Stores History --> B;
+        P -- Stores History --> F;
+        P -- Stores History --> L;
+    end
+
+    subgraph Data Storage
+
+            direction LR
+            Q[(MongoDb<br>Users Collection<br>Conversations)] ;
+
+        
+        O -- User ID --> Q;
+        A -- User ID --> Q;
+    end
+
+    style User Interaction fill:#ccf,stroke:#333,stroke-width:2px
+    style Query Routing System fill:#f9f,stroke:#333,stroke-width:2px
+    style Tool Suite fill:#ccf,stroke:#333,stroke-width:2px
+    style Memory and Context Management fill:#f9f,stroke:#333,stroke-width:2px
+    style Data Storage fill:#ccf,stroke:#333,stroke-width:2px
+    style MongoDB fill:#bbb,stroke:#333,stroke-width:2px,shape:cylinder
+
+    O -- Delivers to --> A;fa

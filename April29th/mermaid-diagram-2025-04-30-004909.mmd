@@ -1,0 +1,67 @@
+
+flowchart LR
+  %% Main application area
+  subgraph AU["Admin Utility Tool"]
+    AdminUI[[Admin Utility]]
+  end
+
+  subgraph EU["Advisor Gateway"]
+    UI[[AG End User]]
+  end
+
+  subgraph App["Spring Boot Application"]
+    AuthAPI[/getAppsConfigForUser/V1 API/]
+    CircuitBreaker[[Resilience4j CircuitBreaker]]
+    RedisKeyEventListener[[KeyspaceNotifier]]
+  end
+
+  subgraph Cache["Redis Cluster"]
+    Redis[(Hash: entitlements:ppid:elid)]
+  end
+
+  %% Monitoring & Notifications
+  subgraph Monitoring["Monitoring & Notifications"]
+    KeyspaceNotifier[(Redis Keyspace Notifications)]
+    MetricCollector[(Prometheus & Grafana OR Splunk Logging)]
+  end
+
+  %% Database at bottom
+  subgraph DB["Primary Mongo Database"]
+    UserDB[(AppsRegistry\nother Tables)]
+  end
+
+  %% Data Flows
+  UI --|POST /getAppsConfigForUser| -->AuthAPI
+  AuthAPI --|1. call Redis| -->CircuitBreaker
+  CircuitBreaker --|2. HGETALL entitlements:user:userId| -->Redis
+  Redis --|3a. Hit| -->AuthAPI
+  Redis --|3b. Miss| -->CircuitBreaker
+  CircuitBreaker --|4b. fallback to DB| -->UserDB
+  UserDB --|SELECT entitlements| -->AuthAPI
+  AuthAPI --|HMSET entitlements:ppid:elid| -->Redis
+  AdminUI --|POST /cache/ppid/elid/refresh| -->AuthAPI
+  AuthAPI --|@CacheEvict reload| -->Redis
+  AuthAPI --|emit metrics| -->MetricCollector
+  Redis --|emit key events| -->RedisKeyEventListener
+  KeyspaceNotifier --|alerts| -->MetricCollector
+
+  %% Scheduled Jobs at bottom-left corner
+  subgraph Scheduled["Scheduled Jobs"]
+    direction LR
+    subgraph PreWarm["Batch Job"]
+      PreWarmJob[[Scheduled Cache Batch Job]]
+    end
+    subgraph Cache1["Redis Cluster"]
+      Redis1[(Hash: entitlements:ppid:elid)]
+    end
+  end
+
+  PreWarmJob --|HMSET entitlements:ppid:elid|--> Redis1
+  PreWarmJob --|HMSET entitlements:ppid:elid|--> Redis1
+
+  %% Styling
+  classDef normalNodes font-size:18px;
+  classDef subgraphs font-size:18px;font-weight:bold;
+
+  class AdminUI,UI,AuthAPI,CircuitBreaker,RedisKeyEventListener,Redis,KeyspaceNotifier,MetricCollector,UserDB,PreWarmJob,Redis1 normalNodes;
+  class AU,EU,App,Cache,Monitoring,DB,Scheduled subgraphs;

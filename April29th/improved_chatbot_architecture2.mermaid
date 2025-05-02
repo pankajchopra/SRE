@@ -1,0 +1,92 @@
+graph LR
+    subgraph User Interface
+        UI[Web Browser Interface] --> A["User Prompt/Query"];
+    end
+
+    subgraph User Interaction
+        A --> AgentEx[AgentExecutor];
+    end
+
+    subgraph Query Routing System
+        AgentEx -- Tool Planning --> B(Query Routing System);
+        B -- LLM for Classification --> C{Tool Selection};
+    end
+
+    subgraph API Component
+        AA[API Gateway] --> AB[Authentication Service];
+        AA --> AC[Database Service];
+        AA --> AD[External API Service];
+        
+        AD --> AE[Yahoo Finance Connector];
+        AD --> AF[Search Engine Connector];
+        AD --> AG[Other External APIs];
+        
+        AC --> Q[(MongoDB)];
+    end
+
+    subgraph Tool Suite
+        subgraph Stock Information Tool
+            D[Stock Information Processor]
+        end
+        subgraph Account API Tool
+            E[Account Data Processor]
+        end
+        subgraph Enhanced Search Tool
+            F[LLM for Rephrasing] --> G[Search Request Handler];
+        end
+        subgraph Document Processing Tool
+            H[LightRAG Document Processor] -- Fallback --> I[LangChain Document Loaders];
+            J(Document Files) --> H;
+            J --> I;
+        end
+        subgraph Response Refinement Tool
+            K[LLM for Tone Adjustment & Summarization]
+        end
+
+        C -- Stock Info--> D;
+        C -- Account 360 API --> E;
+        C -- Enhanced Search --> F;
+        C -- Document Processing --> H;
+        C -- Other --> G;
+    end
+
+    %% Connect Tools to API Component
+    D --> AA;
+    E --> AA;
+    G --> AA;
+    H --> AA;
+    I --> AA;
+    
+    %% External API connections
+    AE -- Yahoo Finance API --> AD;
+    AF -- Web Search API --> AD;
+    
+    %% Results processing
+    AA --> L(Tool Result Analysis);
+
+    L -- Update Context --> ContextBuilder[Context Assembly];
+    ContextBuilder -- Consolidated Context --> M{Agent Decision};
+    M -- More Info Needed --> B;
+    M -- All Info Gathered --> N(Response Refinement);
+    N --> LLMFinal[Final LLM Processing];
+    LLMFinal --> O{Final Response};
+
+    subgraph Memory and Context Management
+        P[ConversationBufferMemory] -- Stores History --> B;
+        P -- Stores History --> F;
+        P -- Stores History --> L;
+        P -- Persistent Storage --> AC;
+    end
+
+    %% User management flow
+    A -- User ID --> AA;
+    O -- Save Conversation --> AA;
+    O -- Delivers to --> UI;
+
+    style User Interface fill:#9cf,stroke:#333,stroke-width:2px
+    style User Interaction fill:#ccf,stroke:#333,stroke-width:2px
+    style Query Routing System fill:#f9f,stroke:#333,stroke-width:2px
+    style Tool Suite fill:#ccf,stroke:#333,stroke-width:2px
+    style Memory and Context Management fill:#f9f,stroke:#333,stroke-width:2px
+    style API Component fill:#ffc,stroke:#333,stroke-width:4px
+    style MongoDB fill:#bbb,stroke:#333,stroke-width:2px,shape:cylinder

@@ -1,0 +1,125 @@
+graph TB
+    subgraph Database Service
+        direction TB
+        
+        APIG[API Gateway] --> Auth[Authentication & Authorization]
+        Auth --> DBAPI[Database API Service]
+        
+        subgraph CRUD API Endpoints
+            direction TB
+            DBAPI --> UserAPI[User APIs]
+            DBAPI --> ConvAPI[Conversation APIs]
+            DBAPI --> PrefAPI[Preferences APIs]
+            
+            subgraph User APIs
+                direction LR
+                U1[POST /api/users] --> UC[Create User]
+                U2[GET /api/users/{id}] --> UR[Read User]
+                U3[PUT /api/users/{id}] --> UU[Update User]
+                U4[DELETE /api/users/{id}] --> UD[Delete User]
+                U5[GET /api/users] --> UL[List Users]
+            end
+            
+            subgraph Conversation APIs
+                direction LR
+                C1[POST /api/conversations] --> CC[Create Conversation]
+                C2[GET /api/conversations/{id}] --> CR[Read Conversation]
+                C3[PUT /api/conversations/{id}] --> CU[Update Conversation]
+                C4[DELETE /api/conversations/{id}] --> CD[Delete Conversation]
+                C5[GET /api/conversations] --> CL[List Conversations]
+                C6[POST /api/conversations/{id}/messages] --> CM[Add Message]
+                C7[GET /api/users/{id}/conversations] --> CUL[List User Conversations]
+            end
+            
+            subgraph Preferences APIs
+                direction LR
+                P1[POST /api/preferences] --> PC[Create Preferences]
+                P2[GET /api/preferences/{id}] --> PR[Read Preferences]
+                P3[PUT /api/preferences/{id}] --> PU[Update Preferences]
+                P4[DELETE /api/preferences/{id}] --> PD[Delete Preferences]
+                P5[GET /api/users/{id}/preferences] --> PUP[Get User Preferences]
+            end
+        end
+        
+        subgraph Data Access Layer
+            direction TB
+            DAL[Data Access Layer] --> UM[User Model]
+            DAL --> CM1[Conversation Model]
+            DAL --> PM[Preferences Model]
+            DAL --> QBuilder[Query Builder]
+            DAL --> Cache[Cache Layer]
+        end
+        
+        UserAPI --> DAL
+        ConvAPI --> DAL
+        PrefAPI --> DAL
+    end
+    
+    subgraph MongoDB Cluster
+        direction TB
+        Primary[(Primary Node)]
+        Secondary1[(Secondary Node 1)]
+        Secondary2[(Secondary Node 2)]
+        
+        Primary --- Secondary1
+        Primary --- Secondary2
+        
+        subgraph Collections
+            direction LR
+            Users[(Users Collection)]
+            Conversations[(Conversations Collection)]
+            Preferences[(Preferences Collection)]
+        end
+        
+        Primary --> Collections
+    end
+    
+    DAL --> Primary
+    Cache -. Cache Invalidation .-> DAL
+    
+    subgraph Schema Definitions
+        direction TB
+        UserSchema[User Schema:
+            _id: ObjectId
+            username: String
+            email: String
+            password: String(hashed)
+            created_at: Date
+            updated_at: Date
+            active: Boolean]
+            
+        ConversationSchema[Conversation Schema:
+            _id: ObjectId
+            user_id: ObjectId
+            title: String
+            created_at: Date
+            updated_at: Date
+            messages: Array
+            metadata: Object]
+            
+        PreferenceSchema[Preference Schema:
+            _id: ObjectId
+            user_id: ObjectId
+            settings: Object
+            theme: String
+            notifications: Object
+            created_at: Date
+            updated_at: Date]
+    end
+    
+    Users -.- UserSchema
+    Conversations -.- ConversationSchema
+    Preferences -.- PreferenceSchema
+    
+    style Database Service fill:#f9f,stroke:#333,stroke-width:2px
+    style CRUD API Endpoints fill:#ccf,stroke:#333,stroke-width:2px
+    style Data Access Layer fill:#cfc,stroke:#333,stroke-width:2px
+    style MongoDB Cluster fill:#fcc,stroke:#333,stroke-width:2px
+    style Collections fill:#ffc,stroke:#333,stroke-width:2px
+    style Schema Definitions fill:#eff,stroke:#333,stroke-width:2px
+    style Primary fill:#bbb,stroke:#333,stroke-width:2px,shape:cylinder
+    style Secondary1 fill:#bbb,stroke:#333,stroke-width:2px,shape:cylinder
+    style Secondary2 fill:#bbb,stroke:#333,stroke-width:2px,shape:cylinder
+    style Users fill:#bbb,stroke:#333,stroke-width:2px,shape:cylinder
+    style Conversations fill:#bbb,stroke:#333,stroke-width:2px,shape:cylinder
+    style Preferences fill:#bbb,stroke:#333,stroke-width:2px,shape:cylinder
